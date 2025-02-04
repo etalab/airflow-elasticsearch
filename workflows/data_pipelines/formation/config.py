@@ -1,7 +1,7 @@
 from dag_datalake_sirene.config import MINIO_BASE_URL, DataSourceConfig
 
 FORMATION_CONFIG = DataSourceConfig(
-    name="formation",
+    name="organisme_formation",
     tmp_folder=f"{DataSourceConfig.base_tmp_folder}/formation",
     minio_path="formation",
     file_name="formation",
