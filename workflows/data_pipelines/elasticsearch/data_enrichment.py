@@ -34,8 +34,8 @@ sections_NAF = load_file("sections_codes_naf.json")
 mapping_dep_to_reg = load_file("dep_to_reg.json")
 mapping_role_dirigeants = load_file("roles_dirigeants.json")
 mapping_commune_to_epci = load_file("epci.json")
+nature_juridique_service_public = set(load_file("nature_juridique_service_public.json"))
 service_public_whitelist = set(load_file("service_public_whitelist.json"))
-service_public_blacklist = set(load_file("service_public_blacklist.json"))
 
 
 # Nom complet
@@ -153,7 +153,7 @@ def is_ess(est_ess_france, ess_insee):
     return est_ess_france or est_ess_insee
 
 
-# Service public
+# Administration
 def is_service_public(nature_juridique_unite_legale: str, siren: str) -> bool:
     """
     Determine if a given entity is classified as a public service.
@@ -164,22 +164,14 @@ def is_service_public(nature_juridique_unite_legale: str, siren: str) -> bool:
 
     Returns:
     - bool: True if the entity is classified as a public service,
-            False otherwise. Exceptions include:
-            - BPI France and URSSAF are considered public.
-            - RATP is excluded based on blacklist.
+            False otherwise.
     """
-    if siren in service_public_blacklist:
-        return False
-
-    # Define valid prefixes for public service
-    valid_prefixes = {"4", "71", "72", "73", "74"}
-
-    is_public = (
-        nature_juridique_unite_legale
-        and nature_juridique_unite_legale.startswith(tuple(valid_prefixes))
+    is_administration = (
+        nature_juridique_unite_legale is not None
+        and nature_juridique_unite_legale in nature_juridique_service_public
     ) or siren in service_public_whitelist
 
-    return is_public
+    return is_administration
 
 
 # Association
@@ -493,12 +485,13 @@ def format_etablissements_and_complements(
             etablissement["departement"]
         )
         if etablissement["latitude"] is None or etablissement["longitude"] is None:
-            etablissement["latitude"], etablissement["longitude"] = (
-                transform_coordinates(
-                    etablissement["departement"],
-                    etablissement["x"],
-                    etablissement["y"],
-                )
+            (
+                etablissement["latitude"],
+                etablissement["longitude"],
+            ) = transform_coordinates(
+                etablissement["departement"],
+                etablissement["x"],
+                etablissement["y"],
             )
         etablissement["ancien_siege"] = sqlite_str_to_bool(
             etablissement["ancien_siege"]
