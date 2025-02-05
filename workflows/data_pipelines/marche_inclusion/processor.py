@@ -38,6 +38,7 @@ class MarcheInclusionProcessor(DataProcessor):
             self.config.file_output, columns=["siret", "kind"], index=False
         )
 
-        DataProcessor.push_unique_count(
-            df_inclusion.siret, Notification.notification_xcom_key
+        DataProcessor.push_message(
+            Notification.notification_xcom_key,
+            column=df_inclusion.siret,
         )
